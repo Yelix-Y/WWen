@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hmi-test-agent"
+version = "0.1.0"
+description = "QWen-driven automotive HMI and APP testing agent scaffold"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "openai>=1.40.0",
+  "pydantic>=2.7.0",
+  "prefect>=3.0.0",
+  "uvicorn>=0.30.0",
+]
+
+[project.scripts]
+hmi-agent = "hmi_agent.main:main"
+hmi-agent-web = "hmi_agent.webapp:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
