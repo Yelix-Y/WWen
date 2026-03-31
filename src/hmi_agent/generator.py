@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from re import sub
 
+import httpx
 from openai import OpenAI
 
 from .config import QwenConfig
@@ -12,7 +13,11 @@ from .models import CaseGenerationRequest, CaseGenerationResult, TestCase
 class QwenCaseGenerator:
     def __init__(self, config: QwenConfig) -> None:
         self.config = config
-        self.client = OpenAI(api_key=config.api_key, base_url=config.base_url)
+        self.client = OpenAI(
+            api_key=config.api_key,
+            base_url=config.base_url,
+            http_client=httpx.Client(verify=config.verify_ssl, trust_env=False),
+        )
 
     def generate(self, request: CaseGenerationRequest) -> CaseGenerationResult:
         prompt = self._build_user_prompt(request)

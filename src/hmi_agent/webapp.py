@@ -15,7 +15,7 @@ from .orchestrator import run_test_flow
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 STATIC_DIR = Path(__file__).resolve().parent / "static"
-DEFAULT_CONFIG = ROOT_DIR / "configs" / "AI_Config.md"
+DEFAULT_CONFIG = ROOT_DIR / "configs" / "qwen3_vl.json"
 DEFAULT_OUTPUT = ROOT_DIR / "runs"
 
 app = FastAPI(title="HMI Test Agent Web", version="0.1.0")
@@ -25,7 +25,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 class RunRequest(BaseModel):
     requirement_text: str = Field(min_length=5)
     offline_demo: bool = True
-    config_file: str = "configs/AI_Config.md"
+    config_file: str = "configs/qwen3_vl.json"
     output_root: str = "runs"
 
 

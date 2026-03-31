@@ -14,21 +14,22 @@ class QwenConfig(BaseModel):
     model: str = Field(min_length=1)
     system_prompt: str = Field(min_length=1)
     temperature: float = Field(default=0.1, ge=0.0, le=2.0)
-    max_tokens: int = Field(default=2000, ge=128, le=8192)
+    max_tokens: int = Field(default=2000, ge=128, le=32768)
+    verify_ssl: bool = True
 
 
 class ConfigError(RuntimeError):
     """Raised when runtime configuration is invalid."""
 
 
-def _extract_json_block(markdown_text: str) -> dict:
-    match = re.search(r"\{[\s\S]*\}", markdown_text)
+def _extract_json_block(config_text: str) -> dict:
+    match = re.search(r"\{[\s\S]*\}", config_text)
     if not match:
-        raise ConfigError("No JSON block found in AI config markdown file.")
+        raise ConfigError("No JSON object found in config file.")
     try:
         return json.loads(match.group(0))
     except json.JSONDecodeError as exc:
-        raise ConfigError(f"Invalid JSON block in AI config markdown: {exc}") from exc
+        raise ConfigError(f"Invalid JSON object in config file: {exc}") from exc
 
 
 def load_qwen_config(config_path: str | Path) -> QwenConfig:
@@ -45,6 +46,7 @@ def load_qwen_config(config_path: str | Path) -> QwenConfig:
         "system_prompt": os.getenv("QWEN_SYSTEM_PROMPT"),
         "temperature": os.getenv("QWEN_TEMPERATURE"),
         "max_tokens": os.getenv("QWEN_MAX_TOKENS"),
+        "verify_ssl": os.getenv("QWEN_VERIFY_SSL"),
     }
 
     for key, value in env_overrides.items():
@@ -55,6 +57,9 @@ def load_qwen_config(config_path: str | Path) -> QwenConfig:
             continue
         if key == "max_tokens":
             payload[key] = int(value)
+            continue
+        if key == "verify_ssl":
+            payload[key] = str(value).strip().lower() not in {"0", "false", "no", "off"}
             continue
         payload[key] = value
 

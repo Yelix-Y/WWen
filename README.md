@@ -6,7 +6,7 @@
 3. 自动观察Case日志并给出根因候选
 
 当前为MVP骨架版本，已包含：
-1. 配置读取与校验（从 configs/AI_Config.md 解析并支持环境变量覆盖）
+1. 配置读取与校验（从 configs/qwen3_vl.json 解析并支持环境变量覆盖）
 2. 需求到Case生成链路（QWen调用 + Schema校验）
 3. 执行与日志观察骨架（Mock Driver + 规则归因）
 4. Prefect端到端编排入口
@@ -17,7 +17,8 @@
 ```text
 .
 ├─configs/
-│  └─AI_Config.md
+│  ├─qwen_config.json
+│  └─qwen3_vl.json
 ├─requirements/
 │  └─sample_requirement.md
 ├─src/hmi_agent/
@@ -63,13 +64,13 @@ $env:QWEN_API_KEY="your-real-key"
 ### 1) 命令行方式
 
 ```powershell
-c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.main --requirement-file requirements/sample_requirement.md --config-file configs/AI_Config.md --output-root runs
+c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.main --requirement-file requirements/sample_requirement.md --config-file configs/qwen3_vl.json --output-root runs
 ```
 
 离线演示模式：
 
 ```powershell
-c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.main --offline-demo --requirement-file requirements/sample_requirement.md --config-file configs/AI_Config.md --output-root runs
+c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.main --offline-demo --requirement-file requirements/sample_requirement.md --config-file configs/qwen3_vl.json --output-root runs
 ```
 
 ### 2) Web前端方式（推荐新手）

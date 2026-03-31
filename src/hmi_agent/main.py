@@ -12,8 +12,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--config-file",
-        default="configs/AI_Config.md",
-        help="Path to AI config markdown",
+        default="configs/qwen3_vl.json",
+        help="Path to QWen config file",
     )
     parser.add_argument(
         "--output-root",
