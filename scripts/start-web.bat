@@ -8,6 +8,7 @@ set "PORT=8080"
 if not "%~1"=="" set "PORT=%~1"
 
 set "PYTHON=%CD%\.venv\Scripts\python.exe"
+set "FRONTEND=%CD%\frontend"
 
 if not exist "%PYTHON%" (
   echo [INFO] .venv not found. Creating virtual environment...
@@ -19,7 +20,16 @@ if not exist "%PYTHON%" (
   )
 )
 
-echo [1/3] Upgrading pip...
+where npm >nul 2>nul
+if errorlevel 1 (
+  echo [WARN] npm not found. Skipping React frontend build and serving existing static assets.
+  echo [3/3] Starting web UI at http://%HOST%:%PORT%
+  start "" "http://%HOST%:%PORT%"
+  "%PYTHON%" -m hmi_agent.webapp --host %HOST% --port %PORT%
+  exit /b %errorlevel%
+)
+
+echo [1/5] Upgrading pip...
 "%PYTHON%" -m pip install --upgrade pip
 if errorlevel 1 (
   echo [ERROR] pip upgrade failed.
@@ -27,7 +37,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [2/3] Installing project dependencies...
+echo [2/5] Installing project dependencies...
 "%PYTHON%" -m pip install -e .
 if errorlevel 1 (
   echo [ERROR] Dependency installation failed.
@@ -35,7 +45,31 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [3/3] Starting web UI at http://%HOST%:%PORT%
+echo [3/5] Installing frontend dependencies...
+pushd "%FRONTEND%"
+npm install
+if errorlevel 1 (
+  echo [WARN] Frontend dependency installation failed. Falling back to existing static assets.
+  popd
+  echo [4/4] Starting web UI at http://%HOST%:%PORT%
+  start "" "http://%HOST%:%PORT%"
+  "%PYTHON%" -m hmi_agent.webapp --host %HOST% --port %PORT%
+  exit /b %errorlevel%
+)
+
+echo [4/5] Building React frontend...
+npm run build
+if errorlevel 1 (
+  echo [WARN] Frontend build failed. Falling back to existing static assets.
+  popd
+  echo [5/5] Starting web UI at http://%HOST%:%PORT%
+  start "" "http://%HOST%:%PORT%"
+  "%PYTHON%" -m hmi_agent.webapp --host %HOST% --port %PORT%
+  exit /b %errorlevel%
+)
+popd
+
+echo [5/5] Starting web UI at http://%HOST%:%PORT%
 start "" "http://%HOST%:%PORT%"
 "%PYTHON%" -m hmi_agent.webapp --host %HOST% --port %PORT%
 

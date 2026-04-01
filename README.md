@@ -21,6 +21,13 @@
 │  └─qwen3_vl.json
 ├─requirements/
 │  └─sample_requirement.md
+├─frontend/
+│  ├─package.json
+│  ├─vite.config.js
+│  └─src/
+│     ├─App.jsx
+│     ├─main.jsx
+│     └─styles.css
 ├─src/hmi_agent/
 │  ├─config.py
 │  ├─models.py
@@ -32,8 +39,7 @@
 │  ├─webapp.py
 │  └─static/
 │     ├─index.html
-│     ├─styles.css
-│     └─app.js
+│     └─assets/
 ├─tests/
 │  └─test_config.py
 └─.github/
@@ -49,6 +55,7 @@
 
 ```powershell
 pip install -e .
+npm --prefix frontend install
 ```
 
 3. 设置QWen密钥（示例）
@@ -78,8 +85,26 @@ c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.main --offline-demo --requireme
 启动服务：
 
 ```powershell
+npm --prefix frontend run build
 c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.webapp --host 127.0.0.1 --port 8080
 ```
+
+前端开发模式（React + Vite，推荐做 UI 调整时使用）：
+
+```powershell
+c:/My/WWen/.venv/Scripts/python.exe -m hmi_agent.webapp --host 127.0.0.1 --port 8080
+npm --prefix frontend run dev
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:5173
+```
+
+说明：Vite 开发服务器会把 `/api/*` 自动代理到 `http://127.0.0.1:8080`。
+
+注意：React + Vite 依赖 `npm install` 从 npm registry 拉取前端包。如果当前机器无法访问 `https://registry.npmjs.org/`，则无法完成前端构建；此时启动脚本会自动回退到仓库中已有的静态资源继续启动后端页面。
 
 或一键脚本：
 

@@ -3,88 +3,1077 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HMI Test Agent 控制台</title>
+    <title>HMI Test Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/static/styles.css" />
+    <script>
+      tailwind = window.tailwind || {};
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Manrope", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+              mono: ["IBM Plex Mono", "Consolas", "SFMono-Regular", "monospace"],
+            },
+            colors: {
+              shell: "#f5f5f2",
+              ink: "#1f2937",
+              line: "#e7e5df",
+              accent: "#111827",
+              mist: "#fafaf9",
+              user: "#ecebe4",
+            },
+            boxShadow: {
+              soft: "0 20px 45px -28px rgba(15, 23, 42, 0.28)",
+              composer: "0 24px 60px -32px rgba(15, 23, 42, 0.34)",
+            },
+            borderRadius: {
+              shell: "28px",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), transparent 28%),
+          linear-gradient(180deg, #fafaf9 0%, #f5f5f2 100%);
+        color: #1f2937;
+      }
+
+      ::selection {
+        background: rgba(17, 24, 39, 0.12);
+      }
+
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(15, 23, 42, 0.18) transparent;
+      }
+
+      *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background: rgba(15, 23, 42, 0.16);
+        border-radius: 999px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .message-enter {
+        animation: message-rise 260ms ease-out;
+      }
+
+      .shell-fade {
+        -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+      }
+
+      .home-hidden {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.985);
+        pointer-events: none;
+        max-height: 0;
+        overflow: hidden;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        border-color: transparent;
+        box-shadow: none;
+      }
+
+      .thread-item {
+        position: relative;
+      }
+
+      .thread-item::before {
+        content: "";
+        position: absolute;
+        inset: 8px auto 8px 8px;
+        width: 2px;
+        border-radius: 999px;
+        background: transparent;
+        transition: background 180ms ease;
+      }
+
+      .thread-item.is-active::before {
+        background: rgba(15, 23, 42, 0.85);
+      }
+
+      .suggestion-card {
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      }
+
+      .suggestion-card:hover {
+        transform: translateY(-2px);
+      }
+
+      .message-action {
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+        transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+      }
+
+      .message-action:hover {
+        background: rgba(255, 255, 255, 1);
+        border-color: rgba(15, 23, 42, 0.18);
+        color: #0f172a;
+      }
+
+      .code-shell {
+        position: relative;
+      }
+
+      .code-copy-btn {
+        position: absolute;
+        top: 0.85rem;
+        right: 0.85rem;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.94);
+        padding: 0.38rem 0.7rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #475569;
+        cursor: pointer;
+      }
+
+      .code-copy-btn:hover {
+        color: #0f172a;
+      }
+
+      .markdown-body pre {
+        overflow-x: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: #fcfcfb;
+        padding: 1rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      }
+
+      .markdown-body code {
+        font-family: "IBM Plex Mono", Consolas, monospace;
+        font-size: 0.92em;
+      }
+
+      .markdown-body :not(pre) > code {
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.06);
+        padding: 0.18rem 0.4rem;
+      }
+
+      .markdown-body blockquote {
+        border-left: 3px solid rgba(15, 23, 42, 0.18);
+        padding-left: 1rem;
+        color: rgba(31, 41, 55, 0.78);
+      }
+
+      .typing-dot {
+        animation: pulse-dot 1.2s infinite ease-in-out;
+      }
+
+      .typing-dot:nth-child(2) {
+        animation-delay: 0.16s;
+      }
+
+      .typing-dot:nth-child(3) {
+        animation-delay: 0.32s;
+      }
+
+      @keyframes pulse-dot {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.28;
+        }
+
+        40% {
+          transform: translateY(-2px);
+          opacity: 1;
+        }
+      }
+
+      @keyframes message-rise {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   </head>
-  <body>
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
+  <body class="font-sans text-ink antialiased">
+    <aside
+      id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 flex w-[18.5rem] -translate-x-full flex-col border-r border-[#e6e3da] bg-[#f3f2ee]/95 px-5 py-5 shadow-soft backdrop-blur-xl transition-transform duration-300 ease-out lg:translate-x-0"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 3l2.4 2.1 3.2-.2 1.5 2.8 2.9 1.3-.4 3.1 1.9 2.5-1.9 2.5.4 3.1-2.9 1.3-1.5 2.8-3.2-.2L12 21l-2.4 2.1-3.2-.2-1.5-2.8-2.9-1.3.4-3.1L.5 12l1.9-2.5-.4-3.1 2.9-1.3 1.5-2.8 3.2.2L12 3z" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">Automotive Agent</p>
+            <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">HMI Test Agent</h1>
+          </div>
+        </div>
+        <button
+          id="closeSidebarBtn"
+          class="rounded-full border border-line p-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 lg:hidden"
+          type="button"
+          aria-label="关闭侧边栏"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
 
-    <header class="hero fade-in">
-      <p class="hero-badge">AUTOMOTIVE QA WORKBENCH</p>
-      <h1>HMI Test Agent 控制台</h1>
-      <p class="hero-subtitle">
-        一键发起需求测试，自动生成Case、执行流程并查看报告。先用离线模式体验，再切换真实QWen。
+      <p class="mt-3 text-sm leading-6 text-slate-500">
+        ChatGPT-like workspace for requirement-driven HMI validation and run report playback.
       </p>
-    </header>
 
-    <main class="layout">
-      <section class="panel stagger" style="--d: 80ms">
-        <h2>1) 发起运行</h2>
-        <label for="requirement">需求文本</label>
-        <textarea id="requirement" rows="10"></textarea>
+      <button
+        id="newChatBtn"
+        class="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+        </svg>
+        New chat
+      </button>
 
-        <div class="grid-2">
+      <div class="mt-8 rounded-3xl border border-line bg-mist p-4 shadow-soft">
+        <div class="flex items-center justify-between gap-3">
           <div>
-            <label for="configFile">配置文件</label>
-            <input id="configFile" value="configs/qwen3_vl.json" />
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Run Settings</p>
+            <p class="mt-1 text-sm text-slate-500">Runtime configuration synced with the existing backend API.</p>
           </div>
+          <span id="modeBadge" class="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white">Online</span>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400" for="configFile">Config File</label>
+          <input
+            id="configFile"
+            class="w-full rounded-2xl border border-line bg-white px-3 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+            value="configs/qwen3_vl.json"
+          />
+
+          <label class="block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400" for="outputRoot">Output Root</label>
+          <input
+            id="outputRoot"
+            class="w-full rounded-2xl border border-line bg-white px-3 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200"
+            value="runs"
+          />
+
+          <label class="flex items-center justify-between rounded-2xl border border-line bg-white px-3 py-3 text-sm text-slate-600">
+            <span>Offline Demo</span>
+            <input id="offlineDemo" class="h-4 w-4 accent-slate-900" type="checkbox" />
+          </label>
+
+          <button
+            id="refreshBtn"
+            class="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+            type="button"
+          >
+            Refresh History
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6 flex min-h-0 flex-1 flex-col shell-fade">
+        <div class="flex items-center justify-between gap-3">
           <div>
-            <label for="outputRoot">输出目录</label>
-            <input id="outputRoot" value="runs" />
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Recent Threads</p>
+            <p class="mt-1 text-sm text-slate-500">Replay previous reports like conversation threads.</p>
+          </div>
+          <span id="historyCount" class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">0</span>
+        </div>
+
+        <div id="runList" class="mt-4 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1"></div>
+      </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="fixed inset-0 z-30 hidden bg-slate-950/20 backdrop-blur-sm lg:hidden"></div>
+
+    <div class="relative min-h-screen lg:pl-[18.5rem]">
+      <header class="sticky top-0 z-20 border-b border-line bg-shell/88 backdrop-blur-xl">
+        <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-10">
+          <div class="flex items-center gap-3">
+            <button
+              id="openSidebarBtn"
+              class="rounded-full border border-line bg-white p-2 text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900 lg:hidden"
+              type="button"
+              aria-label="打开侧边栏"
+            >
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
+              </svg>
+            </button>
+
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Principal Frontend Surface</p>
+              <h2 id="threadTitle" class="text-lg font-bold tracking-tight text-slate-900">New conversation</h2>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="modelPill" class="hidden rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm sm:inline-flex">Model: qwen3-vl:235b</span>
+            <span id="statusPill" class="inline-flex rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm">Idle</span>
           </div>
         </div>
+      </header>
 
-        <label class="switch-row" for="offlineDemo">
-          <input id="offlineDemo" type="checkbox" checked />
-          <span>离线演示模式（推荐新手先开）</span>
-        </label>
+      <main id="chatScroll" class="mx-auto flex w-full max-w-5xl flex-col px-4 pb-56 pt-8 sm:px-6 lg:px-10">
+        <section id="homePanel" class="rounded-shell border border-white/70 bg-white/82 px-6 py-10 shadow-soft backdrop-blur-xl transition duration-300 ease-out">
+          <div class="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <div class="flex h-14 w-14 items-center justify-center rounded-[22px] bg-slate-900 text-white shadow-soft">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 3l2.4 2.1 3.2-.2 1.5 2.8 2.9 1.3-.4 3.1 1.9 2.5-1.9 2.5.4 3.1-2.9 1.3-1.5 2.8-3.2-.2L12 21l-2.4 2.1-3.2-.2-1.5-2.8-2.9-1.3.4-3.1L.5 12l1.9-2.5-.4-3.1 2.9-1.3 1.5-2.8 3.2.2L12 3z" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <span class="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-white">ChatGPT-like UI</span>
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Markdown Ready</span>
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Code Highlight</span>
+            </div>
+            <h3 class="mt-6 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-none tracking-tight text-slate-900">
+              How can I help with your HMI validation today?
+            </h3>
+            <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
+              把需求像聊天一样发给 Agent，后端继续走你现有的 Prefect + QWen pipeline，前端只负责把运行结果用更克制、可读、可复制的形式呈现出来。
+            </p>
+          </div>
 
-        <div class="actions">
-          <button id="runBtn" class="btn-primary">开始运行</button>
-          <button id="refreshBtn" class="btn-secondary">刷新历史</button>
+          <div id="suggestionGrid" class="mx-auto mt-10 grid max-w-4xl gap-3 md:grid-cols-2"></div>
+        </section>
+
+        <section id="messageList" class="mt-8 space-y-8"></section>
+      </main>
+
+      <div class="pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-shell via-shell/94 to-transparent pt-16 lg:left-[18.5rem]">
+        <div class="pointer-events-auto mx-auto w-full max-w-4xl px-4 pb-5 sm:px-6 lg:px-8">
+          <div class="overflow-hidden rounded-[30px] border border-white/80 bg-white/94 shadow-composer backdrop-blur-xl">
+            <div class="border-b border-line px-5 py-3">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Prompt Composer</p>
+                  <p class="mt-1 text-sm text-slate-500">Shift + Enter newline, Enter submit. Auto-resize textarea enabled.</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                  <span class="rounded-full bg-slate-100 px-3 py-1">Agent</span>
+                  <span class="rounded-full bg-slate-100 px-3 py-1">HMI</span>
+                  <span class="rounded-full bg-slate-100 px-3 py-1">QWen</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4 pt-4 sm:px-5">
+              <textarea
+                id="composer"
+                rows="1"
+                class="max-h-56 min-h-[72px] w-full resize-none border-0 bg-transparent px-0 text-[15px] leading-7 text-slate-800 outline-none placeholder:text-slate-400"
+                placeholder="Describe the HMI scenario, acceptance criteria, edge cases, or the exact automotive workflow you want the Agent to validate..."
+              ></textarea>
+
+              <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div class="space-y-1 text-xs text-slate-400">
+                  <p>Backend placeholder lives in the inline JavaScript function <strong>callAgentBackend</strong>.</p>
+                  <p id="composerHint">For cross-origin debugging, replace the relative path with your remote API base URL.</p>
+                </div>
+
+                <div class="flex items-center gap-2 self-end">
+                  <span id="composerModePill" class="hidden rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500 sm:inline-flex">Online QWen</span>
+                  <button
+                    id="clearBtn"
+                    class="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                    type="button"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    id="runBtn"
+                    class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    type="button"
+                  >
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M5 12h14M13 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span id="runBtnText">Send</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <pre id="status" class="status">等待操作...</pre>
-      </section>
+    <script>
+      const dom = {
+        sidebar: document.getElementById("sidebar"),
+        sidebarBackdrop: document.getElementById("sidebarBackdrop"),
+        openSidebarBtn: document.getElementById("openSidebarBtn"),
+        closeSidebarBtn: document.getElementById("closeSidebarBtn"),
+        messageList: document.getElementById("messageList"),
+        composer: document.getElementById("composer"),
+        configFile: document.getElementById("configFile"),
+        outputRoot: document.getElementById("outputRoot"),
+        offlineDemo: document.getElementById("offlineDemo"),
+        runBtn: document.getElementById("runBtn"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        clearBtn: document.getElementById("clearBtn"),
+        runList: document.getElementById("runList"),
+        historyCount: document.getElementById("historyCount"),
+        statusPill: document.getElementById("statusPill"),
+        modeBadge: document.getElementById("modeBadge"),
+        modelPill: document.getElementById("modelPill"),
+        chatScroll: document.getElementById("chatScroll"),
+        threadTitle: document.getElementById("threadTitle"),
+        homePanel: document.getElementById("homePanel"),
+        suggestionGrid: document.getElementById("suggestionGrid"),
+        newChatBtn: document.getElementById("newChatBtn"),
+        composerHint: document.getElementById("composerHint"),
+        runBtnText: document.getElementById("runBtnText"),
+        composerModePill: document.getElementById("composerModePill"),
+      };
 
-      <section class="panel stagger" style="--d: 160ms">
-        <h2>2) 历史运行</h2>
-        <div id="runList" class="run-list"></div>
-      </section>
+      const defaultRequirement = `# 蓝牙连接场景\n\n用户在车机蓝牙页面搜索手机设备，完成配对连接后，车机状态应显示已连接，APP 侧同步显示车机在线。\n\n验收点:\n1. 车机端可发现手机设备。\n2. 输入配对码后连接成功。\n3. APP 状态在 30 秒内刷新为在线。\n4. 连接失败时有可读错误提示并可重试。`;
 
-      <section class="panel panel-wide stagger" style="--d: 240ms">
-        <h2>3) 报告预览</h2>
+      const state = {
+        messages: [],
+        runs: [],
+        activeRunId: null,
+        isLoading: false,
+      };
 
-        <div class="summary" id="summaryCards">
-          <article>
-            <p>Run ID</p>
-            <strong id="summaryRunId">-</strong>
+      const suggestionPrompts = [
+        {
+          title: "Bluetooth Pairing",
+          subtitle: "Success path + retry branch",
+          prompt: "验证车机蓝牙配对成功、配对码错误重试、以及 APP 在线状态同步刷新。",
+        },
+        {
+          title: "Popup Interference",
+          subtitle: "Unexpected modal handling",
+          prompt: "设计一个 HMI 自动化场景，覆盖系统弹窗打断、弹窗关闭后流程恢复、以及状态不丢失。",
+        },
+        {
+          title: "Markdown Report",
+          subtitle: "Readable root-cause output",
+          prompt: "生成一个包含步骤、断言、风险点和日志根因候选的车机导航搜索测试需求。",
+        },
+        {
+          title: "APP + HMI Sync",
+          subtitle: "Cross-surface validation",
+          prompt: "验证车机端执行蓝牙连接后，移动 APP 侧在 30 秒内同步显示在线，失败时给出可追踪提示。",
+        },
+      ];
+
+      marked.setOptions({
+        gfm: true,
+        breaks: true,
+      });
+
+      dom.composer.value = defaultRequirement;
+      syncModeBadge();
+      bootstrapConversation();
+      attachEvents();
+      renderSuggestions();
+      autoResizeComposer();
+      refreshRuns();
+
+      function attachEvents() {
+        dom.runBtn.addEventListener("click", startRun);
+        dom.refreshBtn.addEventListener("click", refreshRuns);
+        dom.clearBtn.addEventListener("click", resetConversation);
+        dom.newChatBtn.addEventListener("click", resetConversation);
+        dom.composer.addEventListener("input", autoResizeComposer);
+        dom.composer.addEventListener("keydown", handleComposerKeydown);
+        dom.offlineDemo.addEventListener("change", syncModeBadge);
+        dom.openSidebarBtn.addEventListener("click", () => toggleSidebar(true));
+        dom.closeSidebarBtn.addEventListener("click", () => toggleSidebar(false));
+        dom.sidebarBackdrop.addEventListener("click", () => toggleSidebar(false));
+      }
+
+      function bootstrapConversation() {
+        state.messages = [
+          {
+            id: createId(),
+            role: "assistant",
+            meta: "Design System Ready",
+            content: [
+              "## Welcome to the new operator surface",
+              "- 左侧 Sidebar 用于配置与历史运行回放。",
+              "- 中间 Conversation Stream 专注展示需求、报告摘要、原始 JSON 与 root cause clues。",
+              "- 底部 Fixed Composer 支持 auto-resize、快捷键发送、以及直接替换成你的 remote fetch endpoint。",
+              "",
+              "把一个 HMI requirement 发给我，然后点 **Run Agent**。",
+            ].join("\n"),
+          },
+        ];
+        renderMessages();
+      }
+
+      function resetConversation() {
+        bootstrapConversation();
+        dom.composer.value = defaultRequirement;
+        autoResizeComposer();
+        state.activeRunId = null;
+        renderHistory();
+        setStatus("Conversation cleared.", "neutral");
+      }
+
+      function renderSuggestions() {
+        dom.suggestionGrid.innerHTML = suggestionPrompts
+          .map(
+            (item, index) => `
+              <button
+                class="suggestion-card rounded-[24px] border border-line bg-white/70 px-4 py-4 text-left shadow-sm hover:border-slate-300 hover:bg-white"
+                type="button"
+                data-suggestion-index="${index}"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold tracking-tight text-slate-800">${escapeHtml(item.title)}</p>
+                    <p class="mt-1 text-sm text-slate-500">${escapeHtml(item.subtitle)}</p>
+                  </div>
+                  <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500">Prompt</span>
+                </div>
+                <p class="mt-4 text-xs leading-6 text-slate-400">${escapeHtml(item.prompt)}</p>
+              </button>
+            `
+          )
+          .join("");
+
+        dom.suggestionGrid.querySelectorAll("[data-suggestion-index]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const index = Number(button.getAttribute("data-suggestion-index"));
+            const item = suggestionPrompts[index];
+            if (!item) {
+              return;
+            }
+            dom.composer.value = item.prompt;
+            autoResizeComposer();
+            dom.composer.focus();
+          });
+        });
+      }
+
+      function createId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function autoResizeComposer() {
+        dom.composer.style.height = "auto";
+        dom.composer.style.height = `${Math.min(dom.composer.scrollHeight, 224)}px`;
+      }
+
+      function handleComposerKeydown(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          startRun();
+        }
+      }
+
+      function toggleSidebar(open) {
+        dom.sidebar.classList.toggle("-translate-x-full", !open);
+        dom.sidebarBackdrop.classList.toggle("hidden", !open);
+      }
+
+      function syncModeBadge() {
+        const isOffline = dom.offlineDemo.checked;
+        dom.modeBadge.textContent = isOffline ? "Offline" : "Online";
+        dom.composerModePill.textContent = isOffline ? "Offline Demo" : "Online QWen";
+        dom.modeBadge.className = isOffline
+          ? "rounded-full bg-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+          : "rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white";
+      }
+
+      function setStatus(text, tone) {
+        const toneClasses = {
+          neutral: "border-line bg-white text-slate-500",
+          success: "border-emerald-200 bg-emerald-50 text-emerald-700",
+          error: "border-rose-200 bg-rose-50 text-rose-700",
+          loading: "border-amber-200 bg-amber-50 text-amber-700",
+        };
+        dom.statusPill.className = `inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm ${toneClasses[tone || "neutral"]}`;
+        dom.statusPill.textContent = text;
+      }
+
+      function appendMessage(message) {
+        state.messages.push(message);
+        renderMessages();
+      }
+
+      function replaceMessage(messageId, nextMessage) {
+        const index = state.messages.findIndex((item) => item.id === messageId);
+        if (index === -1) {
+          return;
+        }
+        state.messages[index] = { ...state.messages[index], ...nextMessage };
+        renderMessages();
+      }
+
+      function renderMessages() {
+        dom.messageList.innerHTML = state.messages.map(renderMessage).join("");
+        dom.messageList.querySelectorAll("pre code").forEach((block) => hljs.highlightElement(block));
+        wireMessageActions();
+        enhanceCodeBlocks();
+        updateThreadChrome();
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        });
+      }
+
+      function wireMessageActions() {
+        dom.messageList.querySelectorAll("[data-copy-message-id]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            const messageId = button.getAttribute("data-copy-message-id");
+            const message = state.messages.find((item) => item.id === messageId);
+            if (!message) {
+              return;
+            }
+            await navigator.clipboard.writeText(message.content || "");
+            const original = button.textContent;
+            button.textContent = "Copied";
+            setTimeout(() => {
+              button.textContent = original;
+            }, 1200);
+          });
+        });
+
+        dom.messageList.querySelectorAll("[data-reuse-message-id]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const messageId = button.getAttribute("data-reuse-message-id");
+            const message = state.messages.find((item) => item.id === messageId);
+            if (!message) {
+              return;
+            }
+            dom.composer.value = message.content || "";
+            autoResizeComposer();
+            dom.composer.focus();
+          });
+        });
+      }
+
+      function enhanceCodeBlocks() {
+        dom.messageList.querySelectorAll("pre").forEach((pre) => {
+          if (pre.parentElement && pre.parentElement.classList.contains("code-shell")) {
+            return;
+          }
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-shell";
+          pre.parentNode.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+
+          const copyButton = document.createElement("button");
+          copyButton.type = "button";
+          copyButton.className = "code-copy-btn";
+          copyButton.textContent = "Copy code";
+          copyButton.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(pre.innerText);
+            const original = copyButton.textContent;
+            copyButton.textContent = "Copied";
+            setTimeout(() => {
+              copyButton.textContent = original;
+            }, 1200);
+          });
+          wrapper.appendChild(copyButton);
+        });
+      }
+
+      function updateThreadChrome() {
+        const title = deriveThreadTitle();
+        dom.threadTitle.textContent = title;
+        const shouldHideHome = state.messages.some((item) => item.role === "user") || state.activeRunId;
+        dom.homePanel.classList.toggle("home-hidden", shouldHideHome);
+        dom.composerHint.textContent = shouldHideHome
+          ? "Conversation mode active. Send another prompt to continue this thread."
+          : "For cross-origin debugging, replace the relative path with your remote API base URL.";
+      }
+
+      function deriveThreadTitle() {
+        const latestUserMessage = [...state.messages].reverse().find((item) => item.role === "user");
+        if (!latestUserMessage) {
+          return "New conversation";
+        }
+        const firstLine = latestUserMessage.content.split("\n").find((line) => line.trim()) || latestUserMessage.content;
+        return firstLine.replace(/^#\s*/, "").slice(0, 36) || "New conversation";
+      }
+
+      function renderMessage(message) {
+        if (message.role === "user") {
+          return `
+            <article class="message-enter flex justify-end">
+              <div class="max-w-[42rem] rounded-[28px] rounded-br-lg border border-white/70 bg-user px-5 py-4 text-[15px] leading-7 text-slate-800 shadow-soft">
+                <div class="mb-2 flex items-center justify-between gap-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <span>User Prompt</span>
+                  <span>${escapeHtml(message.meta || "Just now")}</span>
+                </div>
+                <div class="whitespace-pre-wrap break-words">${escapeHtml(message.content)}</div>
+              </div>
+            </article>
+          `;
+        }
+
+        const html = message.pending
+          ? `
+            <div class="flex items-center gap-2 text-slate-400">
+              <span class="typing-dot h-2 w-2 rounded-full bg-slate-400"></span>
+              <span class="typing-dot h-2 w-2 rounded-full bg-slate-400"></span>
+              <span class="typing-dot h-2 w-2 rounded-full bg-slate-400"></span>
+            </div>
+          `
+          : marked.parse(message.content || "");
+
+        return `
+          <article class="message-enter flex gap-4">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-line bg-white/92 shadow-sm">
+              <svg viewBox="0 0 24 24" class="h-5 w-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 3l7 4v5c0 4.2-2.7 7.6-7 9-4.3-1.4-7-4.8-7-9V7l7-4z" stroke-linejoin="round" />
+                <path d="M9.5 12.5l1.7 1.7L15 10.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="min-w-0 max-w-[46rem] flex-1">
+              <div class="mb-2 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <span>Agent Output</span>
+                <span>${escapeHtml(message.meta || "Live response")}</span>
+              </div>
+              <div class="markdown-body prose prose-slate max-w-none rounded-[30px] rounded-tl-md bg-transparent px-1 py-1 prose-headings:mb-4 prose-headings:font-extrabold prose-headings:tracking-tight prose-p:leading-7 prose-pre:bg-[#fcfcfb] prose-strong:text-slate-900 sm:px-2">
+                ${html}
+              </div>
+              ${message.pending ? "" : `
+                <div class="mt-3 flex items-center gap-2 pl-1 text-xs text-slate-400">
+                  <button type="button" data-copy-message-id="${escapeHtml(message.id)}" class="message-action rounded-full px-3 py-1.5 font-semibold">Copy</button>
+                  <button type="button" data-reuse-message-id="${escapeHtml(message.id)}" class="message-action rounded-full px-3 py-1.5 font-semibold">Reuse prompt</button>
+                </div>
+              `}
+            </div>
           </article>
-          <article>
-            <p>Case 数量</p>
-            <strong id="summaryCaseCount">-</strong>
-          </article>
-          <article>
-            <p>通过率</p>
-            <strong id="summaryPassRate">-</strong>
-          </article>
-          <article>
-            <p>模型</p>
-            <strong id="summaryModel">-</strong>
-          </article>
-        </div>
+        `;
+      }
 
-        <pre id="reportViewer" class="report-viewer">暂无报告，先点击“开始运行”或从历史列表选择。</pre>
-      </section>
-    </main>
+      function renderHistory() {
+        dom.historyCount.textContent = String(state.runs.length);
 
-    <script src="/static/app.js"></script>
+        if (!state.runs.length) {
+          dom.runList.innerHTML = `
+            <div class="rounded-3xl border border-dashed border-line bg-mist px-4 py-6 text-sm leading-7 text-slate-400">
+              No run history yet. Start a new conversation to create your first report thread.
+            </div>
+          `;
+          return;
+        }
+
+        dom.runList.innerHTML = state.runs
+          .map((run) => {
+            const activeClass = run.run_id === state.activeRunId ? "is-active border-slate-300 bg-slate-100/80" : "border-line bg-white hover:border-slate-300 hover:bg-slate-50";
+            const title = run.run_id.replace(/^run-/, "").replace(/-/g, " ");
+            return `
+              <button
+                data-run-id="${escapeHtml(run.run_id)}"
+                class="thread-item w-full rounded-3xl border px-4 py-4 pl-6 text-left shadow-sm transition ${activeClass}"
+                type="button"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold tracking-tight text-slate-800">${escapeHtml(title)}</p>
+                    <p class="mt-1 text-xs leading-5 text-slate-400">${escapeHtml(formatDate(run.created_at))}</p>
+                  </div>
+                  <span class="rounded-full ${run.has_report ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"} px-2.5 py-1 text-[11px] font-semibold">
+                    ${run.has_report ? "Report" : "Pending"}
+                  </span>
+                </div>
+              </button>
+            `;
+          })
+          .join("");
+
+        dom.runList.querySelectorAll("[data-run-id]").forEach((button) => {
+          button.addEventListener("click", async () => {
+            const runId = button.getAttribute("data-run-id");
+            await loadRunReport(runId);
+            toggleSidebar(false);
+          });
+        });
+      }
+
+      function formatDate(value) {
+        if (!value) {
+          return "Unknown time";
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        return date.toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
+      }
+
+      async function callAgentBackend(payload) {
+        const response = await fetch("/api/run", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          let detail = "Request failed.";
+          try {
+            const errorPayload = await response.json();
+            detail = errorPayload.detail || detail;
+          } catch {
+            detail = response.statusText || detail;
+          }
+          throw new Error(detail);
+        }
+
+        return response.json();
+      }
+
+      async function startRun() {
+        if (state.isLoading) {
+          return;
+        }
+
+        const requirement = dom.composer.value.trim();
+        if (!requirement) {
+          setStatus("Requirement is empty.", "error");
+          return;
+        }
+
+        state.isLoading = true;
+        setStatus("Agent is running...", "loading");
+        dom.runBtn.disabled = true;
+        dom.runBtnText.textContent = "Running";
+
+        const payload = {
+          requirement_text: requirement,
+          config_file: dom.configFile.value.trim() || "configs/qwen3_vl.json",
+          output_root: dom.outputRoot.value.trim() || "runs",
+          offline_demo: dom.offlineDemo.checked,
+        };
+
+        const userMessage = {
+          id: createId(),
+          role: "user",
+          meta: formatDate(new Date().toISOString()),
+          content: requirement,
+        };
+        appendMessage(userMessage);
+
+        const pendingMessageId = createId();
+        appendMessage({
+          id: pendingMessageId,
+          role: "assistant",
+          meta: payload.offline_demo ? "Offline demo run" : "Online QWen run",
+          pending: true,
+          content: "",
+        });
+
+        try {
+          const result = await callAgentBackend(payload);
+          state.activeRunId = result.run_id;
+          dom.modelPill.textContent = `Model: ${result.report?.model || "unknown"}`;
+
+          replaceMessage(pendingMessageId, {
+            pending: false,
+            meta: `Run ${result.run_id}`,
+            content: buildRunMarkdown(result.report, result.manifest),
+          });
+
+          setStatus(`Completed: ${result.run_id}`, "success");
+          await refreshRuns();
+        } catch (error) {
+          replaceMessage(pendingMessageId, {
+            pending: false,
+            meta: "Execution failed",
+            content: [
+              "## Runtime Error",
+              "",
+              `> ${error.message}`,
+              "",
+              "请检查 config file、network path、API availability，或者切回 Offline Demo 先验证端到端流程。",
+            ].join("\n"),
+          });
+          setStatus("Execution failed.", "error");
+        } finally {
+          state.isLoading = false;
+          dom.runBtn.disabled = false;
+          dom.runBtnText.textContent = "Send";
+        }
+      }
+
+      async function refreshRuns() {
+        setStatus("Refreshing history...", "neutral");
+        try {
+          const outputRoot = encodeURIComponent(dom.outputRoot.value.trim() || "runs");
+          const response = await fetch(`/api/runs?output_root=${outputRoot}`);
+          if (!response.ok) {
+            throw new Error("Failed to load history.");
+          }
+          const data = await response.json();
+          state.runs = data.runs || [];
+          renderHistory();
+          setStatus("History synced.", "neutral");
+        } catch (error) {
+          state.runs = [];
+          renderHistory();
+          setStatus(error.message || "Failed to load history.", "error");
+        }
+      }
+
+      async function loadRunReport(runId) {
+        try {
+          setStatus(`Loading ${runId}...`, "loading");
+          const outputRoot = encodeURIComponent(dom.outputRoot.value.trim() || "runs");
+          const [reportResponse, manifestResponse] = await Promise.all([
+            fetch(`/api/runs/${runId}/report?output_root=${outputRoot}`),
+            fetch(`/api/runs/${runId}/manifest?output_root=${outputRoot}`),
+          ]);
+
+          if (!reportResponse.ok) {
+            throw new Error(`Failed to load report for ${runId}.`);
+          }
+
+          const report = await reportResponse.json();
+          const manifest = manifestResponse.ok ? await manifestResponse.json() : null;
+
+          state.activeRunId = runId;
+          dom.modelPill.textContent = `Model: ${report.model || "unknown"}`;
+          state.messages = [
+            state.messages[0],
+            {
+              id: createId(),
+              role: "assistant",
+              meta: `History replay · ${runId}`,
+              content: buildRunMarkdown(report, manifest),
+            },
+          ];
+
+          renderMessages();
+          renderHistory();
+          setStatus(`Loaded ${runId}.`, "success");
+        } catch (error) {
+          setStatus(error.message || "Failed to load run report.", "error");
+        }
+      }
+
+      function buildRunMarkdown(report, manifest) {
+        const results = report.execution_results || [];
+        const passed = results.filter((item) => item.passed).length;
+        const passRate = results.length ? `${Math.round((passed / results.length) * 100)}%` : "0%";
+
+        const executionLines = results.length
+          ? results
+              .map((item) => {
+                const stepCount = item.step_results ? item.step_results.length : 0;
+                const status = item.passed ? "Passed" : "Failed";
+                return `- **${item.case_id}** · ${status} · ${stepCount} steps`;
+              })
+              .join("\n")
+          : "- No execution results returned.";
+
+        const rootCause = report.root_cause_candidates || {};
+        const rootCauseEntries = Object.entries(rootCause);
+        const rootCauseLines = rootCauseEntries.length
+          ? rootCauseEntries
+              .map(([artifact, items]) => `- **${artifact}** · ${(items || []).length} candidate(s)`)
+              .join("\n")
+          : "- No root cause candidates emitted.";
+
+        const reportJson = JSON.stringify(report, null, 2);
+        const manifestBlock = manifest
+          ? ["", "## Run Manifest", "", "```json", JSON.stringify(manifest, null, 2), "```"].join("\n")
+          : "";
+
+        return [
+          "## Run Summary",
+          "",
+          `- **Run ID**: ${report.run_id || "-"}`,
+          `- **Mode**: ${report.offline_demo ? "Offline Demo" : "Online QWen"}`,
+          `- **Model**: ${report.model || "-"}`,
+          `- **Generated Cases**: ${report.generated_case_count ?? 0}`,
+          `- **Pass Rate**: ${passRate}`,
+          manifest && manifest.config_file ? `- **Config File**: ${manifest.config_file}` : null,
+          "",
+          "## Execution Overview",
+          "",
+          executionLines,
+          "",
+          "## Root Cause Signals",
+          "",
+          rootCauseLines,
+          "",
+          "## Raw Report",
+          "",
+          "```json",
+          reportJson,
+          "```",
+          manifestBlock,
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+    </script>
   </body>
 </html>
